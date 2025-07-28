@@ -12,7 +12,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
-  // Response tab switching (Body, Cookies, Headers)
+  // 🔹 Sidebar tab switching (History, Collections, Environments)
+  document.querySelectorAll(".sidebar-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".sidebar-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".sidebar-content").forEach(c => c.style.display = "none");
+
+      tab.classList.add("active");
+      const tabId = tab.dataset.tab;
+      document.getElementById(`sidebar-${tabId}`).style.display = "block";
+    });
+  });
+
+  // 🔹 Response tab switching (Body, Cookies, Headers)
   document.querySelectorAll(".resp-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".resp-tab").forEach(t => t.classList.remove("active"));
@@ -30,24 +42,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Body sub-tab switching (Pretty, Raw)
+  // 🔹 Body sub-tab switching (Pretty, Raw)
   document.querySelectorAll(".body-subtab").forEach(subtab => {
     subtab.addEventListener("click", () => {
       document.querySelectorAll(".body-subtab").forEach(t => t.classList.remove("active"));
       subtab.classList.add("active");
 
       const selected = subtab.dataset.subtab;
-      if (selected === "pretty") {
-        prettyResponse.style.display = "block";
-        rawResponse.style.display = "none";
-      } else {
-        prettyResponse.style.display = "none";
-        rawResponse.style.display = "block";
-      }
+      prettyResponse.style.display = selected === "pretty" ? "block" : "none";
+      rawResponse.style.display = selected === "raw" ? "block" : "none";
     });
   });
 
-  // Send request
+  // 🔹 Send request and handle response
   sendBtn.addEventListener("click", async () => {
     const url = urlInput.value.trim();
     const method = methodSelect.value;
@@ -86,10 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
 
-      // Raw view
+      // Raw response view
       rawResponse.innerText = raw;
 
-      // Pretty view
+      // Pretty view handling
       let formatted = raw;
       const mode = prettyMode.value;
 

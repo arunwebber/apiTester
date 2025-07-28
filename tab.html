@@ -9,9 +9,25 @@
   <div class="container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <h3>History</h3>
-      <ul id="history-list"></ul>
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-tab="history">History</button>
+        <button class="sidebar-tab" data-tab="collections">Collections</button>
+        <button class="sidebar-tab" data-tab="environments">Environments</button>
+      </div>
+
+      <div class="sidebar-content" id="sidebar-history">
+        <ul id="history-list"></ul>
+      </div>
+
+      <div class="sidebar-content" id="sidebar-collections" style="display: none;">
+        <p>No collections yet.</p>
+      </div>
+
+      <div class="sidebar-content" id="sidebar-environments" style="display: none;">
+        <p>No environments set.</p>
+      </div>
     </div>
+
 
     <!-- Main Panel -->
     <div class="main">

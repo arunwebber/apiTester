@@ -130,6 +130,32 @@ button:hover {
   box-sizing: border-box;
 }
 
+.sidebar-tabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.sidebar-tab {
+  flex: 1;
+  padding: 6px;
+  background-color: #ddd;
+  border: none; 
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.sidebar-tab.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.sidebar-content {
+  display: block;
+}
+
 .sidebar h3 {
   margin-top: 0;
 }
