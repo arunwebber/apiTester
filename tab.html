@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini API Tester</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Mini API Tester</h2>
+
+  <label>URL:</label>
+  <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
+
+  <label>Method:</label>
+  <select id="method">
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>DELETE</option>
+    <option>PATCH</option>
+    <option>HEAD</option>
+    <option>OPTIONS</option>
+  </select>
+
+  <div id="headers-section">
+    <label>Headers (JSON):</label>
+    <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
+  </div>
+
+  <div id="body-section">
+    <label>Body (JSON):</label>
+    <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
+  </div>
+
+  <button id="send">Send</button>
+
+  <h3>Response</h3>
+  <div id="status"></div>
+  <pre id="response"></pre>
+
+  <script src="popup.js"></script>
+</body>
+</html>

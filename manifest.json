@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Mini API Tester",
+  "version": "1.0",
+  "description": "Send API requests like Postman from a browser tab.",
+  "action": {
+    "default_title": "Open API Tester"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["tabs"]
+}
