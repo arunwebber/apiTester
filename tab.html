@@ -5,70 +5,81 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Mini API Tester</h2>
 
-  <label>URL:</label>
-  <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
-
-  <label>Method:</label>
-  <select id="method">
-    <option>GET</option>
-    <option>POST</option>
-    <option>PUT</option>
-    <option>DELETE</option>
-    <option>PATCH</option>
-    <option>HEAD</option>
-    <option>OPTIONS</option>
-  </select>
-
-  <div id="headers-section">
-    <label>Headers (JSON):</label>
-    <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
-  </div>
-
-  <div id="body-section">
-    <label>Body (JSON):</label>
-    <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
-  </div>
-
-  <button id="send">Send</button>
-
-  <h3>Response</h3>
-
-  <div class="response-tabs">
-    <button class="resp-tab active" data-tab="body">Body</button>
-    <button class="resp-tab" data-tab="cookies">Cookies</button>
-    <button class="resp-tab" data-tab="headers">Headers</button>
-  </div>
-
-  <!-- BODY TAB -->
-  <div class="response-content" id="tab-body">
-    <div class="body-subtabs">
-      <button class="body-subtab active" data-subtab="pretty">Pretty</button>
-      <button class="body-subtab" data-subtab="raw">Raw</button>
-
-      <select id="pretty-mode">
-        <option value="auto">Auto</option>
-        <option value="json">JSON</option>
-        <option value="xml">XML</option>
-        <option value="html">HTML</option>
-        <option value="text">Text</option>
-      </select>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h3>History</h3>
+      <ul id="history-list"></ul>
     </div>
-    <pre id="pretty-response"></pre>
-    <pre id="raw-response" style="display: none;"></pre>
-  </div>
 
-  <!-- COOKIES TAB -->
-  <div class="response-content" id="tab-cookies" style="display: none;">
-    <pre id="cookie-response">Cookies will appear here.</pre>
-  </div>
+    <!-- Main Panel -->
+    <div class="main">
+      <h2>Mini API Tester</h2>
 
-  <!-- HEADERS TAB -->
-  <div class="response-content" id="tab-headers" style="display: none;">
-    <pre id="header-response">Headers will appear here.</pre>
-  </div>
+      <label>URL:</label>
+      <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
 
+      <label>Method:</label>
+      <select id="method">
+        <option>GET</option>
+        <option>POST</option>
+        <option>PUT</option>
+        <option>DELETE</option>
+        <option>PATCH</option>
+        <option>HEAD</option>
+        <option>OPTIONS</option>
+      </select>
+
+      <div id="headers-section">
+        <label>Headers (JSON):</label>
+        <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
+      </div>
+
+      <div id="body-section">
+        <label>Body (JSON):</label>
+        <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
+      </div>
+
+      <button id="send">Send</button>
+
+      <h3>Response</h3>
+
+      <div class="response-tabs">
+        <button class="resp-tab active" data-tab="body">Body</button>
+        <button class="resp-tab" data-tab="cookies">Cookies</button>
+        <button class="resp-tab" data-tab="headers">Headers</button>
+      </div>
+
+      <!-- BODY TAB -->
+      <div class="response-content" id="tab-body">
+        <div class="body-subtabs">
+          <button class="body-subtab active" data-subtab="pretty">Pretty</button>
+          <button class="body-subtab" data-subtab="raw">Raw</button>
+
+          <select id="pretty-mode">
+            <option value="auto">Auto</option>
+            <option value="json">JSON</option>
+            <option value="xml">XML</option>
+            <option value="html">HTML</option>
+            <option value="text">Text</option>
+          </select>
+        </div>
+        <pre id="pretty-response"></pre>
+        <pre id="raw-response" style="display: none;"></pre>
+      </div>
+
+      <!-- COOKIES TAB -->
+      <div class="response-content" id="tab-cookies" style="display: none;">
+        <pre id="cookie-response">Cookies will appear here.</pre>
+      </div>
+
+      <!-- HEADERS TAB -->
+      <div class="response-content" id="tab-headers" style="display: none;">
+        <pre id="header-response">Headers will appear here.</pre>
+      </div>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>

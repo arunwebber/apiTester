@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const headerResponse = document.getElementById("header-response");
   const cookieResponse = document.getElementById("cookie-response");
   const prettyMode = document.getElementById("pretty-mode");
+  const historyList = document.getElementById("history-list");
 
   // Response tab switching (Body, Cookies, Headers)
   document.querySelectorAll(".resp-tab").forEach(tab => {
@@ -46,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Send request
   sendBtn.addEventListener("click", async () => {
     const url = urlInput.value.trim();
     const method = methodSelect.value;
@@ -87,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Raw view
       rawResponse.innerText = raw;
 
-      // Pretty view logic
+      // Pretty view
       let formatted = raw;
       const mode = prettyMode.value;
 
@@ -122,6 +124,17 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cookies tab
       const setCookie = res.headers.get("set-cookie");
       cookieResponse.innerText = setCookie ? setCookie : "No Set-Cookie header.";
+
+      // ✅ Add to History
+      const historyItem = document.createElement("li");
+      historyItem.innerText = `${method} ${url}`;
+      historyItem.addEventListener("click", () => {
+        urlInput.value = url;
+        methodSelect.value = method;
+        headersInput.value = headersText;
+        bodyInput.value = bodyText;
+      });
+      historyList.prepend(historyItem);
     } catch (err) {
       prettyResponse.innerText = `Request failed: ${err.message}`;
       rawResponse.innerText = "";
