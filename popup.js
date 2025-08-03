@@ -12,7 +12,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
-  // 🔹 Sidebar tab switching (History, Collections, Environments)
+  // 🔹 Load history from localStorage on startup
+  const savedHistory = JSON.parse(localStorage.getItem("apiHistory")) || [];
+  savedHistory.forEach(({ method, url, headersText, bodyText }) => {
+    const historyItem = document.createElement("li");
+    historyItem.innerText = `${method} ${url}`;
+    historyItem.addEventListener("click", () => {
+      urlInput.value = url;
+      methodSelect.value = method;
+      headersInput.value = headersText;
+      bodyInput.value = bodyText;
+    });
+    historyList.appendChild(historyItem);
+  });
+
+  // 🔹 Sidebar tab switching
   document.querySelectorAll(".sidebar-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".sidebar-tab").forEach(t => t.classList.remove("active"));
@@ -24,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 🔹 Response tab switching (Body, Cookies, Headers)
+  // 🔹 Response tab switching
   document.querySelectorAll(".resp-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".resp-tab").forEach(t => t.classList.remove("active"));
@@ -42,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 🔹 Body sub-tab switching (Pretty, Raw)
+  // 🔹 Body sub-tab switching
   document.querySelectorAll(".body-subtab").forEach(subtab => {
     subtab.addEventListener("click", () => {
       document.querySelectorAll(".body-subtab").forEach(t => t.classList.remove("active"));
@@ -142,6 +156,12 @@ document.addEventListener("DOMContentLoaded", () => {
         bodyInput.value = bodyText;
       });
       historyList.prepend(historyItem);
+
+      // ✅ Save to localStorage
+      const existingHistory = JSON.parse(localStorage.getItem("apiHistory")) || [];
+      existingHistory.unshift({ method, url, headersText, bodyText });
+      localStorage.setItem("apiHistory", JSON.stringify(existingHistory));
+
     } catch (err) {
       prettyResponse.innerText = `Request failed: ${err.message}`;
       rawResponse.innerText = "";
