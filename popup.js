@@ -17,8 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function createHistoryItem({ method, url, headersText, bodyText }, index) {
     const li = document.createElement("li");
-    li.classList.add("history-item"); // optional for styling
-
+    li.classList.add("history-item");
     li.innerHTML = `
       <button class="delete-btn" title="Delete" style="margin-right: 8px;">X</button>
       <span class="history-text" style="cursor: pointer;">${method.toUpperCase()}: ${url}</span>
@@ -44,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     historyList.appendChild(li);
   }
 
-
   function renderHistory() {
     historyList.innerHTML = "";
     history.forEach((item, index) => {
@@ -52,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Initial render
   renderHistory();
 
   // 🔹 Sidebar tab switching
@@ -97,12 +94,61 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 🔹 Send request and handle response
+  // 🔹 ENV VARIABLES
+  const envKeyInput = document.getElementById("env-key");
+  const envValueInput = document.getElementById("env-value");
+  const addEnvBtn = document.getElementById("add-env-btn");
+  const envList = document.getElementById("env-list");
+
+  let environment = JSON.parse(localStorage.getItem("environment")) || {};
+
+  function renderEnvList() {
+    envList.innerHTML = "";
+    for (const [key, value] of Object.entries(environment)) {
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.innerHTML = `
+        <span><strong>${key}</strong>: ${value}</span>
+        <button class="delete-btn" data-key="${key}">Remove</button>
+      `;
+      envList.appendChild(item);
+    }
+
+    envList.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.key;
+        delete environment[key];
+        localStorage.setItem("environment", JSON.stringify(environment));
+        renderEnvList();
+      });
+    });
+  }
+
+  addEnvBtn.addEventListener("click", () => {
+    const key = envKeyInput.value.trim();
+    const value = envValueInput.value.trim();
+    if (key && value) {
+      environment[key] = value;
+      localStorage.setItem("environment", JSON.stringify(environment));
+      envKeyInput.value = "";
+      envValueInput.value = "";
+      renderEnvList();
+    }
+  });
+
+  renderEnvList();
+
+  // 🔹 Replace {{variable}} with env value
+  function replaceEnvVariables(str) {
+    return str.replace(/{{(.*?)}}/g, (_, key) => environment[key.trim()] || "");
+  }
+
+  // 🔹 Send request
   sendBtn.addEventListener("click", async () => {
-    const url = urlInput.value.trim();
-    const method = methodSelect.value;
-    const headersText = headersInput.value;
-    const bodyText = bodyInput.value;
+    let url = replaceEnvVariables(urlInput.value.trim());
+    let method = methodSelect.value;
+    let headersText = replaceEnvVariables(headersInput.value);
+    let bodyText = replaceEnvVariables(bodyInput.value);
 
     let headers = {};
     if (headersText.trim() !== "") {
@@ -136,46 +182,39 @@ document.addEventListener("DOMContentLoaded", () => {
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
 
-      // Raw response view
       rawResponse.innerText = raw;
 
-      // Pretty view handling
       let formatted = raw;
       const mode = prettyMode.value;
 
       if ((mode === "json") || (mode === "auto" && contentType.includes("application/json"))) {
         try {
           formatted = JSON.stringify(JSON.parse(raw), null, 2);
-        } catch (e) {
+        } catch {
           formatted = raw;
         }
       } else if ((mode === "xml") || (mode === "auto" && contentType.includes("xml"))) {
         try {
           const doc = new DOMParser().parseFromString(raw, "application/xml");
           formatted = new XMLSerializer().serializeToString(doc);
-        } catch (e) {
+        } catch {
           formatted = raw;
         }
-      } else if ((mode === "html") || (mode === "auto" && contentType.includes("text/html"))) {
-        formatted = raw;
-      } else if (mode === "text" || mode === "auto") {
+      } else {
         formatted = raw;
       }
 
       prettyResponse.innerText = formatted;
 
-      // Headers tab
       let headerStr = "";
       res.headers.forEach((value, key) => {
         headerStr += `${key}: ${value}\n`;
       });
       headerResponse.innerText = headerStr || "No headers.";
 
-      // Cookies tab
       const setCookie = res.headers.get("set-cookie");
-      cookieResponse.innerText = setCookie ? setCookie : "No Set-Cookie header.";
+      cookieResponse.innerText = setCookie || "No Set-Cookie header.";
 
-      // ✅ Add to history
       const newEntry = { method, url, headersText, bodyText };
       history.unshift(newEntry);
       localStorage.setItem("apiHistory", JSON.stringify(history));

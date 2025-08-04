@@ -24,7 +24,15 @@
       </div>
 
       <div class="sidebar-content" id="sidebar-environments" style="display: none;">
-        <p>No environments set.</p>
+      <h3>Environment Variables</h3>
+      <div id="env-list"></div>
+
+      <div style="margin-top: 10px;">
+        <input type="text" id="env-key" placeholder="Key" style="width: 45%; display: inline-block;" />
+        <input type="text" id="env-value" placeholder="Value" style="width: 45%; display: inline-block; margin-left: 5%;" />
+        <button id="add-env-btn" style="margin-top: 5px; width: 100%;">Add Variable</button>
+      </div>
+
       </div>
     </div>
 
