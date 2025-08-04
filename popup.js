@@ -12,19 +12,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
-  // 🔹 Load history from localStorage on startup
-  const savedHistory = JSON.parse(localStorage.getItem("apiHistory")) || [];
-  savedHistory.forEach(({ method, url, headersText, bodyText }) => {
-    const historyItem = document.createElement("li");
-    historyItem.innerText = `${method} ${url}`;
-    historyItem.addEventListener("click", () => {
+  // 🔹 Load and manage live history array
+  let history = JSON.parse(localStorage.getItem("apiHistory")) || [];
+
+  function createHistoryItem({ method, url, headersText, bodyText }, index) {
+    const li = document.createElement("li");
+    li.classList.add("history-item"); // optional for styling
+
+    li.innerHTML = `
+      <button class="delete-btn" title="Delete" style="margin-right: 8px;">X</button>
+      <span class="history-text" style="cursor: pointer;">${method.toUpperCase()}: ${url}</span>
+    `;
+
+    const deleteBtn = li.querySelector(".delete-btn");
+    const textSpan = li.querySelector(".history-text");
+
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      history.splice(index, 1);
+      localStorage.setItem("apiHistory", JSON.stringify(history));
+      renderHistory();
+    });
+
+    textSpan.addEventListener("click", () => {
       urlInput.value = url;
       methodSelect.value = method;
       headersInput.value = headersText;
       bodyInput.value = bodyText;
     });
-    historyList.appendChild(historyItem);
-  });
+
+    historyList.appendChild(li);
+  }
+
+
+  function renderHistory() {
+    historyList.innerHTML = "";
+    history.forEach((item, index) => {
+      createHistoryItem(item, index);
+    });
+  }
+
+  // Initial render
+  renderHistory();
 
   // 🔹 Sidebar tab switching
   document.querySelectorAll(".sidebar-tab").forEach(tab => {
@@ -146,21 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const setCookie = res.headers.get("set-cookie");
       cookieResponse.innerText = setCookie ? setCookie : "No Set-Cookie header.";
 
-      // ✅ Add to History
-      const historyItem = document.createElement("li");
-      historyItem.innerText = `${method} ${url}`;
-      historyItem.addEventListener("click", () => {
-        urlInput.value = url;
-        methodSelect.value = method;
-        headersInput.value = headersText;
-        bodyInput.value = bodyText;
-      });
-      historyList.prepend(historyItem);
-
-      // ✅ Save to localStorage
-      const existingHistory = JSON.parse(localStorage.getItem("apiHistory")) || [];
-      existingHistory.unshift({ method, url, headersText, bodyText });
-      localStorage.setItem("apiHistory", JSON.stringify(existingHistory));
+      // ✅ Add to history
+      const newEntry = { method, url, headersText, bodyText };
+      history.unshift(newEntry);
+      localStorage.setItem("apiHistory", JSON.stringify(history));
+      renderHistory();
 
     } catch (err) {
       prettyResponse.innerText = `Request failed: ${err.message}`;
