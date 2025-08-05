@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
-  // 🔹 Load and manage live history array
   let history = JSON.parse(localStorage.getItem("apiHistory")) || [];
 
   function createHistoryItem({ method, url, headersText, bodyText }, index) {
@@ -52,49 +51,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderHistory();
 
-  // 🔹 Sidebar tab switching
   document.querySelectorAll(".sidebar-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".sidebar-tab").forEach(t => t.classList.remove("active"));
       document.querySelectorAll(".sidebar-content").forEach(c => c.style.display = "none");
-
       tab.classList.add("active");
       const tabId = tab.dataset.tab;
       document.getElementById(`sidebar-${tabId}`).style.display = "block";
     });
   });
 
-  // 🔹 Response tab switching
   document.querySelectorAll(".resp-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".resp-tab").forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
-
       document.querySelectorAll(".response-content").forEach(section => {
         section.style.display = "none";
       });
-
       const targetId = `tab-${tab.dataset.tab}`;
       const target = document.getElementById(targetId);
-      if (target) {
-        target.style.display = "block";
-      }
+      if (target) target.style.display = "block";
     });
   });
 
-  // 🔹 Body sub-tab switching
   document.querySelectorAll(".body-subtab").forEach(subtab => {
     subtab.addEventListener("click", () => {
       document.querySelectorAll(".body-subtab").forEach(t => t.classList.remove("active"));
       subtab.classList.add("active");
-
       const selected = subtab.dataset.subtab;
       prettyResponse.style.display = selected === "pretty" ? "block" : "none";
       rawResponse.style.display = selected === "raw" ? "block" : "none";
     });
   });
 
-  // 🔹 ENV VARIABLES
+  // ENVIRONMENT TAB
   const envKeyInput = document.getElementById("env-key");
   const envValueInput = document.getElementById("env-value");
   const addEnvBtn = document.getElementById("add-env-btn");
@@ -138,12 +128,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderEnvList();
 
-  // 🔹 Replace {{variable}} with env value
   function replaceEnvVariables(str) {
     return str.replace(/{{(.*?)}}/g, (_, key) => environment[key.trim()] || "");
   }
 
-  // 🔹 Send request
+  // COLLECTION TAB
+  const collectionList = document.getElementById("collection-list");
+  const collectionNameInput = document.getElementById("collection-name");
+  const addCollectionBtn = document.getElementById("add-collection-btn");
+
+  let collections = JSON.parse(localStorage.getItem("collections")) || [];
+
+  function renderCollections() {
+    collectionList.innerHTML = "";
+    collections.forEach((col, idx) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML = `
+        <span><strong>${col.name}</strong> (${col.requests.length} requests)</span>
+        <button class="delete-btn" data-index="${idx}">Delete</button>
+      `;
+
+      div.querySelector(".delete-btn").addEventListener("click", () => {
+        collections.splice(idx, 1);
+        localStorage.setItem("collections", JSON.stringify(collections));
+        renderCollections();
+      });
+
+      collectionList.appendChild(div);
+    });
+  }
+
+  addCollectionBtn.addEventListener("click", () => {
+    const name = collectionNameInput.value.trim();
+    if (name) {
+      collections.push({ name, requests: [] });
+      localStorage.setItem("collections", JSON.stringify(collections));
+      collectionNameInput.value = "";
+      renderCollections();
+    }
+  });
+
+  renderCollections();
+
+  // SEND REQUEST
   sendBtn.addEventListener("click", async () => {
     let url = replaceEnvVariables(urlInput.value.trim());
     let method = methodSelect.value;
@@ -181,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
-
       rawResponse.innerText = raw;
 
       let formatted = raw;

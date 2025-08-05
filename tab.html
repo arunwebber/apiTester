@@ -5,7 +5,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="container">
     <!-- Sidebar -->
     <div class="sidebar">
@@ -20,22 +19,33 @@
       </div>
 
       <div class="sidebar-content" id="sidebar-collections" style="display: none;">
-        <p>No collections yet.</p>
+        <h3>Collections</h3>
+        <ul id="collection-list"></ul>
+
+        <div style="margin-top: 10px;">
+          <input type="text" id="collection-name" placeholder="Collection Name" />
+          <button id="add-collection-btn">Add Collection</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <input type="file" id="import-collection-file" />
+          <button id="import-collection-btn">Import Collection</button>
+        </div>
+
+        <button id="export-collections-btn" style="margin-top: 10px;">Export All Collections</button>
       </div>
 
       <div class="sidebar-content" id="sidebar-environments" style="display: none;">
-      <h3>Environment Variables</h3>
-      <div id="env-list"></div>
+        <h3>Environment Variables</h3>
+        <div id="env-list"></div>
 
-      <div style="margin-top: 10px;">
-        <input type="text" id="env-key" placeholder="Key" style="width: 45%; display: inline-block;" />
-        <input type="text" id="env-value" placeholder="Value" style="width: 45%; display: inline-block; margin-left: 5%;" />
-        <button id="add-env-btn" style="margin-top: 5px; width: 100%;">Add Variable</button>
-      </div>
-
+        <div style="margin-top: 10px;">
+          <input type="text" id="env-key" placeholder="Key" style="width: 45%;" />
+          <input type="text" id="env-value" placeholder="Value" style="width: 45%; margin-left: 5%;" />
+          <button id="add-env-btn" style="margin-top: 5px; width: 100%;">Add Variable</button>
+        </div>
       </div>
     </div>
-
 
     <!-- Main Panel -->
     <div class="main">
