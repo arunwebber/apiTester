@@ -1,126 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Mini API Tester</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple API Tester</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <div id="header">
+    <div class="dark-mode-toggle">
+      <label class="switch">
+        <input type="checkbox" id="darkModeToggle">
+        <span class="slider round"></span>
+      </label>
+    </div>
+    <div id="titleAndDisclaimer">
+      <h1>Simple API Tester</h1>
+    </div>
+  </div>
+
+  <div id="appLayout">
     <div class="sidebar">
       <div class="sidebar-tabs">
         <button class="sidebar-tab active" data-tab="history">History</button>
         <button class="sidebar-tab" data-tab="collections">Collections</button>
         <button class="sidebar-tab" data-tab="environments">Environments</button>
       </div>
-
-      <div class="sidebar-content" id="sidebar-history">
+      <div class="sidebar-content" id="sidebar-history" style="display: block;">
         <ul id="history-list"></ul>
       </div>
-
       <div class="sidebar-content" id="sidebar-collections" style="display: none;">
         <h3>Collections</h3>
         <ul id="collection-list"></ul>
-
-        <div style="margin-top: 10px;">
+        <div class="button-group">
           <input type="text" id="collection-name" placeholder="Collection Name" />
-          <button id="add-collection-btn">Add Collection</button>
+          <button id="add-collection-btn">Add</button>
         </div>
-
-        <div style="margin-top: 10px;">
+        <div class="button-group">
           <input type="file" id="import-collection-file" />
-          <button id="import-collection-btn">Import Collection</button>
+          <button id="import-collection-btn">Import</button>
         </div>
-
-        <button id="export-collections-btn" style="margin-top: 10px;">Export All Collections</button>
+        <button id="export-collections-btn">Export All Collections</button>
       </div>
-
       <div class="sidebar-content" id="sidebar-environments" style="display: none;">
         <h3>Environment Variables</h3>
         <div id="env-list"></div>
-
-        <div style="margin-top: 10px;">
-          <input type="text" id="env-key" placeholder="Key" style="width: 45%;" />
-          <input type="text" id="env-value" placeholder="Value" style="width: 45%; margin-left: 5%;" />
-          <button id="add-env-btn" style="margin-top: 5px; width: 100%;">Add Variable</button>
+        <div class="button-group">
+          <input type="text" id="env-key" placeholder="Key" />
+          <input type="text" id="env-value" placeholder="Value" />
+          <button id="add-env-btn">Add Variable</button>
         </div>
       </div>
     </div>
-
+    
     <div class="main">
-      <h2>Mini API Tester</h2>
-
-      <label>URL:</label>
-      <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
-
-      <label>Method:</label>
-      <select id="method">
-        <option>GET</option>
-        <option>POST</option>
-        <option>PUT</option>
-        <option>DELETE</option>
-        <option>PATCH</option>
-        <option>HEAD</option>
-        <option>OPTIONS</option>
-      </select>
-
-      <div id="headers-section">
-        <label>Headers (JSON):</label>
-        <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
-      </div>
-
-      <div id="body-section">
-        <label>Body (JSON):</label>
-        <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
-      </div>
-
-      <button id="send">Send</button>
-      <button id="save-request-btn">Save</button>
-
-      <div id="save-dropdown" style="display: none;">
-        <div style="padding: 10px; border: 1px solid #ccc; background-color: white; position: absolute; z-index: 1000; top: calc(100% + 5px); left: 0;">
-          <p>Select a Collection:</p>
-          <ul id="save-collection-list" style="list-style: none; padding: 0;"></ul>
-          <hr />
-          <input type="text" id="new-collection-name" placeholder="New Collection Name" style="margin-top: 10px;" />
-          <button id="save-to-new-btn" style="margin-top: 5px;">Save to New Collection</button>
+      <div class="api-controls">
+        <div class="control-row">
+          <label for="url">URL:</label>
+          <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
+        </div>
+        <div class="control-row">
+          <label for="method">Method:</label>
+          <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+            <option>PATCH</option>
+            <option>HEAD</option>
+            <option>OPTIONS</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="headers">Headers (JSON):</label>
+          <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
+        </div>
+        <div class="control-row">
+          <label for="body">Body (JSON):</label>
+          <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
+        </div>
+        <div class="button-wrapper">
+          <button id="send">Send</button>
+          <button id="save-request-btn">Save</button>
         </div>
       </div>
 
       <h3>Response</h3>
-
-      <div class="response-tabs">
-        <button class="resp-tab active" data-tab="body">Body</button>
-        <button class="resp-tab" data-tab="cookies">Cookies</button>
-        <button class="resp-tab" data-tab="headers">Headers</button>
-      </div>
-
-      <div class="response-content" id="tab-body">
-        <div class="body-subtabs">
-          <button class="body-subtab active" data-subtab="pretty">Pretty</button>
-          <button class="body-subtab" data-subtab="raw">Raw</button>
-
-          <select id="pretty-mode">
-            <option value="auto">Auto</option>
-            <option value="json">JSON</option>
-            <option value="xml">XML</option>
-            <option value="html">HTML</option>
-            <option value="text">Text</option>
-          </select>
+      <div class="response-tabs-wrapper">
+        <div class="response-tabs">
+          <button class="resp-tab active" data-tab="body">Body</button>
+          <button class="resp-tab" data-tab="cookies">Cookies</button>
+          <button class="resp-tab" data-tab="headers">Headers</button>
         </div>
-        <pre id="pretty-response"></pre>
-        <pre id="raw-response" style="display: none;"></pre>
-      </div>
-
-      <div class="response-content" id="tab-cookies" style="display: none;">
-        <pre id="cookie-response">Cookies will appear here.</pre>
-      </div>
-
-      <div class="response-content" id="tab-headers" style="display: none;">
-        <pre id="header-response">Headers will appear here.</pre>
+        <div class="response-content-wrapper">
+          <div class="response-content" id="tab-body">
+            <div class="body-subtabs">
+              <button class="body-subtab active" data-subtab="pretty">Pretty</button>
+              <button class="body-subtab" data-subtab="raw">Raw</button>
+              <select id="pretty-mode">
+                <option value="auto">Auto</option>
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+                <option value="html">HTML</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            <pre id="pretty-response"></pre>
+            <pre id="raw-response" style="display: none;"></pre>
+          </div>
+          <div class="response-content" id="tab-cookies" style="display: none;">
+            <pre id="cookie-response">Cookies will appear here.</pre>
+          </div>
+          <div class="response-content" id="tab-headers" style="display: none;">
+            <pre id="header-response">Headers will appear here.</pre>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <div id="footer">
+    For support and code base:<a target="_blank" href="https://hashpallabs.com/">HashPalLabs</a>.
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

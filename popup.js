@@ -1,10 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send");
-  const saveBtn = document.getElementById("save-request-btn"); // New
-  const saveDropdown = document.getElementById("save-dropdown"); // New
-  const saveCollectionList = document.getElementById("save-collection-list"); // New
-  const newCollectionNameInput = document.getElementById("new-collection-name"); // New
-  const saveToNewBtn = document.getElementById("save-to-new-btn"); // New
+  const saveBtn = document.getElementById("save-request-btn"); // Corrected this line
+
+  const saveDropdown = document.getElementById("save-dropdown");
+  const saveCollectionList = document.getElementById("save-collection-list");
+  const newCollectionNameInput = document.getElementById("new-collection-name");
+  const saveToNewBtn = document.getElementById("save-to-new-btn");
   const methodSelect = document.getElementById("method");
   const urlInput = document.getElementById("url");
   const headersInput = document.getElementById("headers");
@@ -17,9 +18,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
+  // Theme Toggle Elements
+  const darkModeToggle = document.getElementById("darkModeToggle");
+
   let history = JSON.parse(localStorage.getItem("apiHistory")) || [];
-  let collections = JSON.parse(localStorage.getItem("collections")) || []; // Ensure collections is initialized
+  let collections = JSON.parse(localStorage.getItem("collections")) || [];
   let environment = JSON.parse(localStorage.getItem("environment")) || {};
+
+  // Theme Logic
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+    darkModeToggle.checked = true;
+  }
+
+  darkModeToggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.body.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  });
 
   function createHistoryItem({ method, url, headersText, bodyText }, index) {
     const li = document.createElement("li");
@@ -179,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveCollectionList.innerHTML = "";
     collections.forEach((col, idx) => {
       const li = document.createElement("li");
-      li.style.padding = "5px";
+      li.style.padding = "8px";
       li.style.cursor = "pointer";
       li.innerText = col.name;
       li.addEventListener("click", () => {
@@ -190,22 +211,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  saveBtn.addEventListener("click", () => {
-    saveDropdown.style.display = saveDropdown.style.display === "none" ? "block" : "none";
-    renderSaveCollections();
-  });
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      saveDropdown.style.display = saveDropdown.style.display === "none" ? "block" : "none";
+      renderSaveCollections();
+    });
+  }
 
-  saveToNewBtn.addEventListener("click", () => {
-    const newName = newCollectionNameInput.value.trim();
-    if (newName) {
-      collections.push({ name: newName, requests: [] });
-      localStorage.setItem("collections", JSON.stringify(collections));
-      saveRequestToCollection(collections.length - 1);
-      newCollectionNameInput.value = "";
-      saveDropdown.style.display = "none";
-      renderCollections();
-    }
-  });
+  if (saveToNewBtn) {
+    saveToNewBtn.addEventListener("click", () => {
+      const newName = newCollectionNameInput.value.trim();
+      if (newName) {
+        collections.push({ name: newName, requests: [] });
+        localStorage.setItem("collections", JSON.stringify(collections));
+        saveRequestToCollection(collections.length - 1);
+        newCollectionNameInput.value = "";
+        saveDropdown.style.display = "none";
+        renderCollections();
+      }
+    });
+  }
 
   function saveRequestToCollection(collectionIndex) {
     const request = {
@@ -222,20 +247,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // SEND REQUEST
   sendBtn.addEventListener("click", async () => {
+    console.log("Send button clicked. Starting API request...");
+
     let url = replaceEnvVariables(urlInput.value.trim());
     let method = methodSelect.value;
     let headersText = replaceEnvVariables(headersInput.value);
     let bodyText = replaceEnvVariables(bodyInput.value);
+
+    // Clear previous responses and show a loading message
+    prettyResponse.innerText = "Loading...";
+    rawResponse.innerText = "";
+    headerResponse.innerText = "";
+    cookieResponse.innerText = "";
 
     let headers = {};
     if (headersText.trim() !== "") {
       try {
         headers = JSON.parse(headersText);
       } catch (err) {
-        alert("Invalid JSON in headers.");
+        prettyResponse.innerText = `Invalid JSON in headers: ${err.message}`;
+        console.error("Headers JSON Parsing Error:", err);
         return;
       }
     }
+    console.log("Request Headers:", headers);
 
     let body = null;
     if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
@@ -243,22 +278,37 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           body = JSON.parse(bodyText);
         } catch (err) {
-          alert("Invalid JSON in body.");
+          prettyResponse.innerText = `Invalid JSON in body: ${err.message}`;
+          console.error("Body JSON Parsing Error:", err);
           return;
         }
       }
     }
+    console.log("Request Body:", body);
 
     try {
+      console.log(`Sending a ${method} request to ${url}`);
       const res = await fetch(url, {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined,
       });
 
+      console.log("Response received.");
+      console.log("Response Status:", res.status);
+      console.log("Response OK:", res.ok);
+
+      if (!res.ok) {
+        prettyResponse.innerText = `Error: ${res.status} ${res.statusText}\n\nCheck the Console and Network tabs for details.`;
+        return;
+      }
+
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
       rawResponse.innerText = raw;
+
+      console.log("Content-Type:", contentType);
+      console.log("Raw Response:", raw);
 
       let formatted = raw;
       const mode = prettyMode.value;
@@ -266,15 +316,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if ((mode === "json") || (mode === "auto" && contentType.includes("application/json"))) {
         try {
           formatted = JSON.stringify(JSON.parse(raw), null, 2);
-        } catch {
-          formatted = raw;
+        } catch (err) {
+          formatted = `Could not parse response as JSON: ${err.message}\n\nRaw response:\n${raw}`;
+          console.error("JSON Parsing Error:", err);
         }
       } else if ((mode === "xml") || (mode === "auto" && contentType.includes("xml"))) {
         try {
           const doc = new DOMParser().parseFromString(raw, "application/xml");
           formatted = new XMLSerializer().serializeToString(doc);
-        } catch {
-          formatted = raw;
+        } catch (err) {
+          formatted = `Could not parse response as XML: ${err.message}\n\nRaw response:\n${raw}`;
+          console.error("XML Parsing Error:", err);
         }
       } else {
         formatted = raw;
@@ -297,10 +349,8 @@ document.addEventListener("DOMContentLoaded", () => {
       renderHistory();
 
     } catch (err) {
-      prettyResponse.innerText = `Request failed: ${err.message}`;
-      rawResponse.innerText = "";
-      headerResponse.innerText = "";
-      cookieResponse.innerText = "";
+      prettyResponse.innerText = `Request failed: ${err.message}. Check the Console and Network tabs for details.`;
+      console.error("Fetch Error:", err);
     }
   });
 });
