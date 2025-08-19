@@ -6,7 +6,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-tabs">
         <button class="sidebar-tab active" data-tab="history">History</button>
@@ -47,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Main Panel -->
     <div class="main">
       <h2>Mini API Tester</h2>
 
@@ -76,6 +74,17 @@
       </div>
 
       <button id="send">Send</button>
+      <button id="save-request-btn">Save</button>
+
+      <div id="save-dropdown" style="display: none;">
+        <div style="padding: 10px; border: 1px solid #ccc; background-color: white; position: absolute; z-index: 1000; top: calc(100% + 5px); left: 0;">
+          <p>Select a Collection:</p>
+          <ul id="save-collection-list" style="list-style: none; padding: 0;"></ul>
+          <hr />
+          <input type="text" id="new-collection-name" placeholder="New Collection Name" style="margin-top: 10px;" />
+          <button id="save-to-new-btn" style="margin-top: 5px;">Save to New Collection</button>
+        </div>
+      </div>
 
       <h3>Response</h3>
 
@@ -85,7 +94,6 @@
         <button class="resp-tab" data-tab="headers">Headers</button>
       </div>
 
-      <!-- BODY TAB -->
       <div class="response-content" id="tab-body">
         <div class="body-subtabs">
           <button class="body-subtab active" data-subtab="pretty">Pretty</button>
@@ -103,12 +111,10 @@
         <pre id="raw-response" style="display: none;"></pre>
       </div>
 
-      <!-- COOKIES TAB -->
       <div class="response-content" id="tab-cookies" style="display: none;">
         <pre id="cookie-response">Cookies will appear here.</pre>
       </div>
 
-      <!-- HEADERS TAB -->
       <div class="response-content" id="tab-headers" style="display: none;">
         <pre id="header-response">Headers will appear here.</pre>
       </div>

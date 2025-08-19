@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send");
+  const saveBtn = document.getElementById("save-request-btn"); // New
+  const saveDropdown = document.getElementById("save-dropdown"); // New
+  const saveCollectionList = document.getElementById("save-collection-list"); // New
+  const newCollectionNameInput = document.getElementById("new-collection-name"); // New
+  const saveToNewBtn = document.getElementById("save-to-new-btn"); // New
   const methodSelect = document.getElementById("method");
   const urlInput = document.getElementById("url");
   const headersInput = document.getElementById("headers");
@@ -13,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const historyList = document.getElementById("history-list");
 
   let history = JSON.parse(localStorage.getItem("apiHistory")) || [];
+  let collections = JSON.parse(localStorage.getItem("collections")) || []; // Ensure collections is initialized
+  let environment = JSON.parse(localStorage.getItem("environment")) || {};
 
   function createHistoryItem({ method, url, headersText, bodyText }, index) {
     const li = document.createElement("li");
@@ -90,8 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const addEnvBtn = document.getElementById("add-env-btn");
   const envList = document.getElementById("env-list");
 
-  let environment = JSON.parse(localStorage.getItem("environment")) || {};
-
   function renderEnvList() {
     envList.innerHTML = "";
     for (const [key, value] of Object.entries(environment)) {
@@ -136,9 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const collectionList = document.getElementById("collection-list");
   const collectionNameInput = document.getElementById("collection-name");
   const addCollectionBtn = document.getElementById("add-collection-btn");
-
-  let collections = JSON.parse(localStorage.getItem("collections")) || [];
-
+  
   function renderCollections() {
     collectionList.innerHTML = "";
     collections.forEach((col, idx) => {
@@ -170,6 +173,52 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   renderCollections();
+
+  // New Save Request Logic
+  function renderSaveCollections() {
+    saveCollectionList.innerHTML = "";
+    collections.forEach((col, idx) => {
+      const li = document.createElement("li");
+      li.style.padding = "5px";
+      li.style.cursor = "pointer";
+      li.innerText = col.name;
+      li.addEventListener("click", () => {
+        saveRequestToCollection(idx);
+        saveDropdown.style.display = "none";
+      });
+      saveCollectionList.appendChild(li);
+    });
+  }
+
+  saveBtn.addEventListener("click", () => {
+    saveDropdown.style.display = saveDropdown.style.display === "none" ? "block" : "none";
+    renderSaveCollections();
+  });
+
+  saveToNewBtn.addEventListener("click", () => {
+    const newName = newCollectionNameInput.value.trim();
+    if (newName) {
+      collections.push({ name: newName, requests: [] });
+      localStorage.setItem("collections", JSON.stringify(collections));
+      saveRequestToCollection(collections.length - 1);
+      newCollectionNameInput.value = "";
+      saveDropdown.style.display = "none";
+      renderCollections();
+    }
+  });
+
+  function saveRequestToCollection(collectionIndex) {
+    const request = {
+      method: methodSelect.value,
+      url: urlInput.value.trim(),
+      headersText: headersInput.value,
+      bodyText: bodyInput.value,
+      timestamp: new Date().toISOString(),
+    };
+    collections[collectionIndex].requests.push(request);
+    localStorage.setItem("collections", JSON.stringify(collections));
+    alert(`Request saved to "${collections[collectionIndex].name}".`);
+  }
 
   // SEND REQUEST
   sendBtn.addEventListener("click", async () => {

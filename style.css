@@ -308,3 +308,34 @@ button:hover {
   overflow-y: auto;
   padding-right: 10px;
 }
+
+/* New Save Button & Dropdown Styles */
+#save-request-btn {
+  background-color: #28a745;
+  width: calc(50% - 5px);
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 10px;
+}
+
+#send {
+  width: calc(50% - 5px);
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#save-request-btn:hover {
+  background-color: #218838;
+}
+
+#save-dropdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+#save-dropdown > div {
+  width: 250px;
+}
