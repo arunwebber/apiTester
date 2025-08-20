@@ -2,6 +2,8 @@
 :root {
   --primary-color: #007bff;
   --secondary-color: #28a745;
+  --tertiary-color: #ffc107; /* Used for the Update button */
+  --danger-color: #dc3545; /* Used for the Delete button */
   --bg-light: #f9f9fb;
   --text-light: #333;
   --border-light: #e0e0e0;
@@ -86,6 +88,7 @@ body.dark-mode #titleAndDisclaimer h1 {
   flex-direction: column;
   transition: background-color 0.3s, border-color 0.3s;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 body.dark-mode .sidebar {
@@ -190,6 +193,13 @@ input:checked + .slider:before {
 }
 
 /* --- Buttons and Controls --- */
+.button-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
 .button-wrapper {
   display: flex;
   gap: 10px;
@@ -197,7 +207,7 @@ input:checked + .slider:before {
 }
 
 #send, #save-request-btn,
-.sidebar-tab, #add-collection-btn, #import-collection-btn, #export-collections-btn, #add-env-btn,
+.sidebar-tab, #add-collection-btn, #add-env-btn,
 .resp-tab, .body-subtab {
   cursor: pointer;
   touch-action: manipulation;
@@ -514,4 +524,70 @@ body.dark-mode pre {
   background-color: var(--bg-dark);
   color: var(--text-dark);
   border-color: var(--border-dark);
+}
+
+/* --- New Styles for Collection Action Buttons --- */
+.request-actions {
+  display: flex;
+  gap: 5px;
+  margin-left: auto; /* Pushes buttons to the right */
+}
+
+.test-btn, .update-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+.test-btn {
+  background-color: var(--secondary-color); /* Matches the Save button */
+  color: white;
+  border: 1px solid var(--secondary-color);
+}
+
+.test-btn:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.update-btn {
+  background-color: var(--tertiary-color); /* A new color for the update button */
+  color: #333;
+  border: 1px solid var(--tertiary-color);
+}
+
+.update-btn:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
+body.dark-mode .test-btn,
+body.dark-mode .update-btn {
+  color: white;
+}
+
+/* --- New Styles for Import/Export Buttons --- */
+.collection-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#import-collections-btn, #export-collections-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+#import-collections-btn:hover, #export-collections-btn:hover {
+  background-color: #0069d9;
+  border-color: #0069d9;
+  transform: translateY(-1px);
 }
