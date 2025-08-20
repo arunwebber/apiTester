@@ -1,11 +1,6 @@
-Here's the GitHub README formatted for clarity and proper markdown.
-
------
-
-\<p align="center"\>
-\<img src="[https://raw.githubusercontent.com/arunwebber/tabman/refs/heads/main/images/icon\_128.png](https://raw.githubusercontent.com/arunwebber/tabman/refs/heads/main/images/icon_128.png)" alt="Tabman Icon" width="128" height="128"\>
-\</p\>
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/arunwebber/apiTester/master/images/icon_128.png" alt="Tabman Icon" width="128" height="128">
+</p>
 # Tabman - API Tester in a Tab
 
 **Tabman** is a lightweight and simple API testing tool that runs directly in your browser tab. Think of it like a mini-Postman inside Chrome—no installations, no heavy UI, just open a tab and start sending requests.
