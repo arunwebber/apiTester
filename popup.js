@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const prettyMode = document.getElementById("pretty-mode");
   const historyList = document.getElementById("history-list");
 
-  // Theme Toggle Elements
   const darkModeToggle = document.getElementById("darkModeToggle");
 
   let history = JSON.parse(localStorage.getItem("apiHistory")) || [];
@@ -89,8 +88,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const tabId = tab.dataset.tab;
       document.getElementById(`sidebar-${tabId}`).style.display = "block";
 
-      if (tabId === "history") {
-        apiControls.style.display = 'block';
+      // Show/hide main controls based on the tab
+      apiControls.style.display = (tabId === "history" || tabId === "collections") ? 'block' : 'none';
+
+      // Remove any temporary screens
+      const tempScreen = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
+      if (tempScreen) {
+        tempScreen.remove();
+        resetSaveButton();
       }
     });
   });
@@ -181,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       div.addEventListener("click", () => {
-        displayCollectionRequests(col);
+        displayCollectionRequests(col, idx);
       });
 
       div.querySelector(".delete-btn").addEventListener("click", (e) => {
@@ -195,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function displayCollectionRequests(collection) {
+  function displayCollectionRequests(collection, collectionIndex) {
     apiControls.style.display = 'none';
 
     const collectionRequestsDisplay = document.createElement('div');
@@ -205,31 +210,28 @@ document.addEventListener("DOMContentLoaded", () => {
         <ul id="collection-requests-list"></ul>
     `;
     
-    const backBtn = document.createElement('button');
-    backBtn.innerText = "Back to Main";
-    backBtn.style.marginBottom = "10px";
-    backBtn.addEventListener('click', () => {
-        apiControls.style.display = 'block';
-        collectionRequestsDisplay.remove();
-    });
-    collectionRequestsDisplay.insertBefore(backBtn, collectionRequestsDisplay.firstChild);
-
     const main = document.querySelector(".main");
-    const existingDisplay = document.getElementById("collection-requests-display");
+    const existingDisplay = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
     if (existingDisplay) existingDisplay.remove();
 
     main.insertBefore(collectionRequestsDisplay, main.firstChild);
 
     const collectionRequestsList = document.getElementById("collection-requests-list");
 
-    collection.requests.forEach((req, idx) => {
+    collection.requests.forEach((req, reqIndex) => {
       const reqItem = document.createElement("li");
       reqItem.className = "history-item";
       reqItem.style.cursor = "pointer";
       reqItem.innerHTML = `
         <span class="history-text">${req.method.toUpperCase()}: ${req.url}</span>
+        <div class="request-actions" style="display: flex; gap: 5px;">
+          <button class="test-btn" data-req-index="${reqIndex}" style="background-color: #007bff; border-color: #007bff; color: #fff;">Test</button>
+          <button class="update-btn" data-req-index="${reqIndex}" style="background-color: #ffc107; border-color: #ffc107; color: #fff;">Update</button>
+          <button class="delete-btn" data-req-index="${reqIndex}">Delete</button>
+        </div>
       `;
-      reqItem.addEventListener('click', () => {
+
+      reqItem.querySelector(".history-text").addEventListener('click', () => {
         urlInput.value = req.url;
         methodSelect.value = req.method;
         headersInput.value = req.headersText;
@@ -241,8 +243,120 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
         document.getElementById('sidebar-history').style.display = 'block';
       });
+
+      // Delete button listener
+      reqItem.querySelector(".delete-btn").addEventListener('click', (e) => {
+        e.stopPropagation();
+        collection.requests.splice(reqIndex, 1);
+        localStorage.setItem("collections", JSON.stringify(collections));
+        displayCollectionRequests(collection, collectionIndex); // Re-render the list
+      });
+      
+      // Update button listener
+      reqItem.querySelector(".update-btn").addEventListener('click', (e) => {
+        e.stopPropagation();
+        urlInput.value = req.url;
+        methodSelect.value = req.method;
+        headersInput.value = req.headersText;
+        bodyInput.value = req.bodyText;
+        toggleSaveUpdateButton(collectionIndex, reqIndex);
+        apiControls.style.display = 'block';
+        collectionRequestsDisplay.remove();
+        document.querySelector('.sidebar-tab.active').classList.remove('active');
+        document.querySelector('[data-tab="history"]').classList.add('active');
+        document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
+        document.getElementById('sidebar-history').style.display = 'block';
+      });
+
+      // Test button listener
+      reqItem.querySelector(".test-btn").addEventListener('click', (e) => {
+        e.stopPropagation();
+        displayTestScreen(req);
+      });
+
       collectionRequestsList.appendChild(reqItem);
     });
+  }
+
+  function displayTestScreen(request) {
+    apiControls.style.display = 'none';
+
+    const testScreen = document.createElement('div');
+    testScreen.id = "test-screen";
+    testScreen.innerHTML = `
+      <h3>Test Request</h3>
+      <div class="api-controls" style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="method-url-container" style="display: flex; gap: 5px;">
+          <select id="test-method" disabled style="width: 100px;">
+            <option>${request.method}</option>
+          </select>
+          <input type="text" id="test-url" value="${request.url}" disabled style="flex-grow: 1;">
+        </div>
+        <div class="headers-body-container" style="display: flex; flex-direction: column; gap: 5px;">
+          <textarea id="test-headers" placeholder="Headers (JSON)" disabled>${request.headersText}</textarea>
+          <textarea id="test-body" placeholder="Body (JSON)" disabled>${request.bodyText}</textarea>
+        </div>
+        <button id="test-send-btn" style="width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #28a745; background-color: #28a745; color: white; cursor: pointer;">Test</button>
+      </div>
+      <div id="test-response-wrapper" style="margin-top: 20px;">
+        <h4>Response</h4>
+        <pre id="test-response" style="background-color: #2c2f33; color: white; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+      </div>
+    `;
+
+    const main = document.querySelector(".main");
+    const existingDisplay = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
+    if (existingDisplay) existingDisplay.remove();
+    main.insertBefore(testScreen, main.firstChild);
+
+    const testSendBtn = document.getElementById("test-send-btn");
+    const testResponse = document.getElementById("test-response");
+
+    testSendBtn.addEventListener('click', async () => {
+      testResponse.innerText = "Loading...";
+      const url = request.url;
+      const method = request.method;
+      const headers = request.headersText ? JSON.parse(request.headersText) : {};
+      const body = request.bodyText ? JSON.parse(request.bodyText) : undefined;
+      
+      try {
+        const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+        const text = await res.text();
+        const formatted = JSON.stringify(JSON.parse(text), null, 2);
+        testResponse.innerText = formatted;
+      } catch (err) {
+        testResponse.innerText = `Error: ${err.message}\n\nRaw response:\n${text || 'N/A'}`;
+      }
+    });
+  }
+
+  function toggleSaveUpdateButton(colIndex, reqIndex) {
+    saveBtn.dataset.updateIndex = `${colIndex},${reqIndex}`;
+    saveBtn.innerText = "Update";
+    saveBtn.style.backgroundColor = "#ffc107";
+    saveBtn.style.borderColor = "#ffc107";
+  }
+
+  function resetSaveButton() {
+    saveBtn.dataset.updateIndex = "";
+    saveBtn.innerText = "Save";
+    saveBtn.style.backgroundColor = "#28a745";
+    saveBtn.style.borderColor = "#28a745";
+  }
+
+  function updateRequestInCollection(colIndex, reqIndex) {
+    const updatedRequest = {
+      method: methodSelect.value,
+      url: urlInput.value.trim(),
+      headersText: headersInput.value,
+      bodyText: bodyInput.value,
+      timestamp: new Date().toISOString(),
+    };
+    collections[colIndex].requests[reqIndex] = updatedRequest;
+    localStorage.setItem("collections", JSON.stringify(collections));
+    resetSaveButton();
+    renderCollections();
+    displayCollectionRequests(collections[colIndex], colIndex);
   }
 
   addCollectionBtn.addEventListener("click", () => {
@@ -274,8 +388,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
-      saveDropdown.style.display = saveDropdown.style.display === "none" ? "block" : "none";
-      renderSaveCollections();
+      const updateIndex = saveBtn.dataset.updateIndex;
+      if (updateIndex) {
+        const [colIndex, reqIndex] = updateIndex.split(',').map(Number);
+        updateRequestInCollection(colIndex, reqIndex);
+      } else {
+        saveDropdown.style.display = saveDropdown.style.display === "none" ? "block" : "none";
+        renderSaveCollections();
+      }
     });
   }
 
@@ -303,10 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     collections[collectionIndex].requests.push(request);
     localStorage.setItem("collections", JSON.stringify(collections));
-    alert(`Request saved to "${collections[collectionIndex].name}".`);
   }
 
-  // Function to format HTML with indentation
   function formatHtml(html) {
     let formatted = '';
     const lines = html.replace(/</g, '\n<').replace(/>/g, '>\n').split('\n');
@@ -329,7 +447,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return formatted.trim();
   }
 
-  // New function to format the response based on the selected mode
   function formatResponse(raw, mode, contentType) {
     let formatted = raw;
 
@@ -338,7 +455,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formatted = JSON.stringify(JSON.parse(raw), null, 2);
       } catch (err) {
         formatted = `Could not parse response as JSON: ${err.message}\n\nRaw response:\n${raw}`;
-        console.error("JSON Parsing Error:", err);
       }
     } else if ((mode === "xml") || (mode === "auto" && contentType.includes("xml"))) {
       try {
@@ -346,7 +462,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formatted = new XMLSerializer().serializeToString(doc);
       } catch (err) {
         formatted = `Could not parse response as XML: ${err.message}\n\nRaw response:\n${raw}`;
-        console.error("XML Parsing Error:", err);
       }
     } else if ((mode === "html") || (mode === "auto" && contentType.includes("text/html"))) {
       formatted = formatHtml(raw);
@@ -356,7 +471,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return formatted;
   }
 
-  // EVENT LISTENER FOR PRETTY MODE DROPDOWN
   prettyMode.addEventListener('change', () => {
     const currentRawContent = rawResponse.innerText;
     const currentContentType = prettyResponse.dataset.contentType || '';
@@ -364,7 +478,6 @@ document.addEventListener("DOMContentLoaded", () => {
     prettyResponse.innerText = newFormattedContent;
   });
 
-  // SEND REQUEST
   sendBtn.addEventListener("click", async () => {
     console.log("Send button clicked. Starting API request...");
 
@@ -378,7 +491,6 @@ document.addEventListener("DOMContentLoaded", () => {
     headerResponse.innerText = "";
     cookieResponse.innerText = "";
     
-    // Reset prettyMode dropdown to auto
     prettyMode.value = 'auto';
 
     let headers = {};
@@ -427,11 +539,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
       
-      // Store raw content and content type for later use
       rawResponse.innerText = raw;
       prettyResponse.dataset.contentType = contentType;
 
-      // Format based on the new logic
       const formatted = formatResponse(raw, prettyMode.value, contentType);
       prettyResponse.innerText = formatted;
 
