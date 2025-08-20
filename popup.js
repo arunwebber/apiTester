@@ -247,9 +247,10 @@ class UIManager {
         }
     }
     
+    // FIXED: Now correctly gets the content type from the raw response element
     handlePrettyModeChange() {
         const rawContent = this.elements.rawResponse.textContent;
-        const contentType = this.elements.prettyResponse.dataset.contentType;
+        const contentType = this.elements.rawResponse.dataset.contentType;
         this.elements.prettyResponse.textContent = this.app.formatResponse(rawContent, this.elements.prettyMode.value, contentType);
     }
 
@@ -440,7 +441,7 @@ class App {
     }
 
     async sendRequest() {
-        const { urlInput, methodSelect, headersInput, bodyInput, prettyResponse, rawResponse } = this.uiManager.elements;
+        const { urlInput, methodSelect, headersInput, bodyInput, prettyResponse } = this.uiManager.elements;
 
         const url = this.dataManager.replaceEnvVariables(urlInput.value.trim());
         const method = methodSelect.value;
@@ -477,7 +478,10 @@ class App {
             const contentType = response.headers.get("content-type") || "";
             const setCookie = response.headers.get("set-cookie") || "";
             
+            // FIXED: Add the contentType as a dataset attribute to rawResponse
             this.uiManager.elements.rawResponse.textContent = rawText;
+            this.uiManager.elements.rawResponse.dataset.contentType = contentType;
+
             this.uiManager.elements.prettyResponse.textContent = this.formatResponse(rawText, this.uiManager.elements.prettyMode.value, contentType);
             this.uiManager.elements.headerResponse.textContent = Array.from(response.headers.entries()).map(([key, value]) => `${key}: ${value}`).join("\n");
             this.uiManager.elements.cookieResponse.textContent = setCookie || "No cookies found.";
