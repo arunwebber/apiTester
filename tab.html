@@ -79,9 +79,16 @@
           <label for="body">Body (JSON):</label>
           <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
         </div>
-        <div class="button-wrapper">
+        <div class="button-wrapper" style="position: relative;">
           <button id="send">Send</button>
           <button id="save-request-btn">Save</button>
+          <div id="save-dropdown" style="display: none;">
+            <ul id="save-collection-list"></ul>
+            <div class="button-group">
+              <input type="text" id="new-collection-name" placeholder="New Collection Name" />
+              <button id="save-to-new-btn">Save to New</button>
+            </div>
+          </div>
         </div>
       </div>
 

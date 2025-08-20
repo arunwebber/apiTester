@@ -250,6 +250,50 @@ body.dark-mode #save-request-btn:hover {
   background-color: #0069d9;
 }
 
+/* Styling for the new save dropdown */
+#save-dropdown {
+  position: absolute;
+  top: 100%; /* Position below the save button */
+  right: 0;
+  width: 250px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 10px;
+  z-index: 1000;
+  margin-top: 5px; /* Spacing between button and dropdown */
+}
+
+body.dark-mode #save-dropdown {
+  background-color: var(--element-bg-dark);
+  border-color: var(--border-dark);
+}
+
+#save-collection-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#save-collection-list li {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+#save-collection-list li:hover {
+  background-color: #f0f2f5;
+}
+
+body.dark-mode #save-collection-list li:hover {
+  background-color: #3e3e40;
+}
+
+
 /* --- Input Fields and Layout --- */
 input, select, textarea {
   width: 100%;

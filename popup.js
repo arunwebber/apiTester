@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send");
-  const saveBtn = document.getElementById("save-request-btn"); // Corrected this line
+  const saveBtn = document.getElementById("save-request-btn");
 
   const saveDropdown = document.getElementById("save-dropdown");
   const saveCollectionList = document.getElementById("save-collection-list");
@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlInput = document.getElementById("url");
   const headersInput = document.getElementById("headers");
   const bodyInput = document.getElementById("body");
+  const apiControls = document.querySelector(".api-controls");
+  const responseSection = document.getElementById("response-section");
 
   const prettyResponse = document.getElementById("pretty-response");
   const rawResponse = document.getElementById("raw-response");
@@ -86,6 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.classList.add("active");
       const tabId = tab.dataset.tab;
       document.getElementById(`sidebar-${tabId}`).style.display = "block";
+
+      if (tabId === "history") {
+        // Show the main API controls when history is active
+        apiControls.style.display = 'block';
+      }
     });
   });
 
@@ -162,24 +169,87 @@ document.addEventListener("DOMContentLoaded", () => {
   const collectionList = document.getElementById("collection-list");
   const collectionNameInput = document.getElementById("collection-name");
   const addCollectionBtn = document.getElementById("add-collection-btn");
-  
+
   function renderCollections() {
     collectionList.innerHTML = "";
     collections.forEach((col, idx) => {
       const div = document.createElement("div");
       div.className = "history-item";
+      div.style.cursor = "pointer"; // Make the whole item clickable
       div.innerHTML = `
         <span><strong>${col.name}</strong> (${col.requests.length} requests)</span>
         <button class="delete-btn" data-index="${idx}">Delete</button>
       `;
 
-      div.querySelector(".delete-btn").addEventListener("click", () => {
+      div.addEventListener("click", () => {
+        displayCollectionRequests(col);
+      });
+
+      div.querySelector(".delete-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
         collections.splice(idx, 1);
         localStorage.setItem("collections", JSON.stringify(collections));
         renderCollections();
       });
 
       collectionList.appendChild(div);
+    });
+  }
+
+  function displayCollectionRequests(collection) {
+    // Hide the main API controls
+    apiControls.style.display = 'none';
+
+    // Clear and create a new display area for requests
+    const collectionRequestsDisplay = document.createElement('div');
+    collectionRequestsDisplay.id = "collection-requests-display";
+    collectionRequestsDisplay.innerHTML = `
+        <h3>Requests in "${collection.name}"</h3>
+        <ul id="collection-requests-list"></ul>
+    `;
+    
+    // Add a back button
+    const backBtn = document.createElement('button');
+    backBtn.innerText = "Back to Main";
+    backBtn.style.marginBottom = "10px";
+    backBtn.addEventListener('click', () => {
+        // Re-show main controls and remove the requests list
+        apiControls.style.display = 'block';
+        collectionRequestsDisplay.remove();
+    });
+    collectionRequestsDisplay.insertBefore(backBtn, collectionRequestsDisplay.firstChild);
+
+    // Get the main area and replace its content
+    const main = document.querySelector(".main");
+    const existingDisplay = document.getElementById("collection-requests-display");
+    if (existingDisplay) existingDisplay.remove();
+
+    main.insertBefore(collectionRequestsDisplay, main.firstChild);
+
+    const collectionRequestsList = document.getElementById("collection-requests-list");
+
+    collection.requests.forEach((req, idx) => {
+      const reqItem = document.createElement("li");
+      reqItem.className = "history-item";
+      reqItem.style.cursor = "pointer";
+      reqItem.innerHTML = `
+        <span class="history-text">${req.method.toUpperCase()}: ${req.url}</span>
+      `;
+      reqItem.addEventListener('click', () => {
+        urlInput.value = req.url;
+        methodSelect.value = req.method;
+        headersInput.value = req.headersText;
+        bodyInput.value = req.bodyText;
+        // Switch back to main controls
+        apiControls.style.display = 'block';
+        collectionRequestsDisplay.remove();
+        // Also switch sidebar tab back to history
+        document.querySelector('.sidebar-tab.active').classList.remove('active');
+        document.querySelector('[data-tab="history"]').classList.add('active');
+        document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
+        document.getElementById('sidebar-history').style.display = 'block';
+      });
+      collectionRequestsList.appendChild(reqItem);
     });
   }
 
