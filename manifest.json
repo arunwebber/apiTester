@@ -1,13 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "Mini API Tester",
-  "version": "1.0",
-  "description": "Send API requests like Postman from a browser tab.",
+  "name": "Tabman",
+  "description": "API testing made simple, inside a browser tab.",
+  "version": "1.0.0",
+  "category": "developer tools",
   "action": {
-    "default_title": "Open API Tester"
+    "default_title": "Tabman",
+    "default_icon": {
+      "16": "images/icon_16.png",
+      "48": "images/icon_48.png",
+      "128": "images/icon_128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
+  "icons": {
+    "16": "images/icon_16.png",
+    "48": "images/icon_48.png",
+    "128": "images/icon_128.png"
+  },
+  "homepage_url": "https://www.HashPalLabs.com",
+  "author": "HashPalLabs",
   "permissions": ["tabs"]
 }
