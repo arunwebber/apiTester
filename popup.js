@@ -93,7 +93,10 @@ class DataManager {
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (Array.isArray(importedData)) {
-                        this.collections = importedData;
+                        // Advanced merge to prevent duplicates by name
+                        const existingCollectionNames = new Set(this.collections.map(c => c.name));
+                        const newCollections = importedData.filter(c => !existingCollectionNames.has(c.name));
+                        this.collections.push(...newCollections);
                         StorageManager.save("collections", this.collections);
                         resolve();
                     } else {
