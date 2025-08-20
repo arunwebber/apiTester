@@ -182,7 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
       div.style.cursor = "pointer";
       div.innerHTML = `
         <span><strong>${col.name}</strong> (${col.requests.length} requests)</span>
-        <button class="delete-btn" data-index="${idx}">Delete</button>
+        <div class="collection-actions" style="display: flex; gap: 5px;">
+          <button class="rename-btn" data-index="${idx}" style="background-color: #007bff; border-color: #007bff; color: #fff;">Rename</button>
+          <button class="delete-btn" data-index="${idx}">Delete</button>
+        </div>
       `;
 
       div.addEventListener("click", () => {
@@ -194,6 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
         collections.splice(idx, 1);
         localStorage.setItem("collections", JSON.stringify(collections));
         renderCollections();
+      });
+
+      div.querySelector(".rename-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const newName = prompt("Enter a new name for the collection:", col.name);
+        if (newName && newName.trim() !== "" && newName !== col.name) {
+          collections[idx].name = newName;
+          localStorage.setItem("collections", JSON.stringify(collections));
+          renderCollections();
+        }
       });
 
       collectionList.appendChild(div);
@@ -423,6 +436,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     collections[collectionIndex].requests.push(request);
     localStorage.setItem("collections", JSON.stringify(collections));
+    // Re-render the collections list to show the updated count immediately.
+    renderCollections();
   }
 
   function formatHtml(html) {
