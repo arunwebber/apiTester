@@ -2,7 +2,7 @@
 :root {
   --primary-color: #007bff;
   --secondary-color: #28a745;
-  --tertiary-color: #ffc107; /* Used for the Update button */
+  --tertiary-color: #ffc107; /* Used for the Update and Export buttons */
   --danger-color: #dc3545; /* Used for the Delete button */
   --bg-light: #f9f9fb;
   --text-light: #333;
@@ -589,5 +589,17 @@ body.dark-mode .update-btn {
 #import-collections-btn:hover, #export-collections-btn:hover {
   background-color: #0069d9;
   border-color: #0069d9;
+  transform: translateY(-1px);
+}
+
+/* New styling for individual Export button */
+.export-btn {
+  background-color: var(--tertiary-color);
+  color: #333;
+  border: 1px solid var(--tertiary-color);
+}
+
+.export-btn:hover {
+  background-color: #e0a800;
   transform: translateY(-1px);
 }

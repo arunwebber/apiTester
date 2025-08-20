@@ -72,8 +72,22 @@ class DataManager {
         return str.replace(/{{(.*?)}}/g, (match, key) => this.environment[key.trim()] || "");
     }
     
-    // New methods for import/export
-    exportCollections() {
+    // New method to export a single collection
+    exportSingleCollection(collection) {
+        const data = JSON.stringify(collection, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${collection.name}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // New method to export all collections
+    exportAllCollections() {
         const data = JSON.stringify(this.collections, null, 2);
         const blob = new Blob([data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -93,7 +107,6 @@ class DataManager {
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (Array.isArray(importedData)) {
-                        // Advanced merge to prevent duplicates by name
                         const existingCollectionNames = new Set(this.collections.map(c => c.name));
                         const newCollections = importedData.filter(c => !existingCollectionNames.has(c.name));
                         this.collections.push(...newCollections);
@@ -183,7 +196,7 @@ class UIManager {
         this.elements.addCollectionBtn.addEventListener("click", () => this.app.addCollection());
         
         // Event listeners for new buttons
-        this.elements.exportCollectionsBtn.addEventListener("click", () => this.app.exportCollections());
+        this.elements.exportCollectionsBtn.addEventListener("click", () => this.app.exportAllCollections());
         this.elements.importCollectionsBtn.addEventListener("click", () => this.elements.importFileInput.click());
         this.elements.importFileInput.addEventListener("change", (e) => this.app.handleImportFile(e.target.files[0]));
 
@@ -270,13 +283,20 @@ class UIManager {
             li.classList.add("history-item");
             li.innerHTML = `
                 <span>${col.name} (${col.requests.length})</span>
-                <button class="delete-btn">X</button>
+                <div class="request-actions">
+                    <button class="export-btn">Export</button>
+                    <button class="delete-btn">X</button>
+                </div>
             `;
             li.querySelector(".delete-btn").addEventListener("click", (e) => {
                 e.stopPropagation();
                 this.dataManager.collections.splice(index, 1);
                 StorageManager.save("collections", this.dataManager.collections);
                 this.renderCollections();
+            });
+            li.querySelector(".export-btn").addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.app.exportSingleCollection(col);
             });
             li.addEventListener("click", () => this.displayCollectionRequests(col, index));
             this.elements.collectionList.appendChild(li);
@@ -573,8 +593,12 @@ class App {
     }
 
     // New methods for import/export
-    exportCollections() {
-        this.dataManager.exportCollections();
+    exportAllCollections() {
+        this.dataManager.exportAllCollections();
+    }
+
+    exportSingleCollection(collection) {
+        this.dataManager.exportSingleCollection(collection);
     }
 
     async handleImportFile(file) {
