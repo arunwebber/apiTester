@@ -10,8 +10,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlInput = document.getElementById("url");
   const headersInput = document.getElementById("headers");
   const bodyInput = document.getElementById("body");
-  const apiControls = document.querySelector(".api-controls");
-  const responseSection = document.getElementById("response-tabs-wrapper");
+
+  const mainApiSection = document.getElementById("main-api-section");
+  const collectionRequestsDisplay = document.getElementById("collection-requests-display");
+  const collectionRequestsList = document.getElementById("collection-requests-list");
+  const collectionRequestsTitle = document.getElementById("collection-requests-title");
+  const testScreen = document.getElementById("test-screen");
+  const testMethod = document.getElementById("test-method");
+  const testUrl = document.getElementById("test-url");
+  const testHeaders = document.getElementById("test-headers");
+  const testBody = document.getElementById("test-body");
+  const testSendBtn = document.getElementById("test-send-btn");
+  const testResponse = document.getElementById("test-response");
 
   const prettyResponse = document.getElementById("pretty-response");
   const rawResponse = document.getElementById("raw-response");
@@ -43,6 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function showSection(section) {
+    mainApiSection.style.display = 'none';
+    collectionRequestsDisplay.style.display = 'none';
+    testScreen.style.display = 'none';
+    if (section === 'main') {
+      mainApiSection.style.display = 'block';
+    } else if (section === 'collection') {
+      collectionRequestsDisplay.style.display = 'block';
+    } else if (section === 'test') {
+      testScreen.style.display = 'block';
+    }
+  }
+
   function createHistoryItem({ method, url, headersText, bodyText }, index) {
     const li = document.createElement("li");
     li.classList.add("history-item");
@@ -66,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       methodSelect.value = method;
       headersInput.value = headersText;
       bodyInput.value = bodyText;
+      showSection('main');
     });
 
     historyList.appendChild(li);
@@ -87,16 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.classList.add("active");
       const tabId = tab.dataset.tab;
       document.getElementById(`sidebar-${tabId}`).style.display = "block";
-
-      // Show/hide main controls based on the tab
-      apiControls.style.display = (tabId === "history" || tabId === "collections") ? 'block' : 'none';
-
-      // Remove any temporary screens
-      const tempScreen = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
-      if (tempScreen) {
-        tempScreen.remove();
-        resetSaveButton();
-      }
+      showSection('main');
+      resetSaveButton();
     });
   });
 
@@ -214,22 +230,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayCollectionRequests(collection, collectionIndex) {
-    apiControls.style.display = 'none';
-
-    const collectionRequestsDisplay = document.createElement('div');
-    collectionRequestsDisplay.id = "collection-requests-display";
-    collectionRequestsDisplay.innerHTML = `
-        <h3>Requests in "${collection.name}"</h3>
-        <ul id="collection-requests-list"></ul>
-    `;
-    
-    const main = document.querySelector(".main");
-    const existingDisplay = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
-    if (existingDisplay) existingDisplay.remove();
-
-    main.insertBefore(collectionRequestsDisplay, main.firstChild);
-
-    const collectionRequestsList = document.getElementById("collection-requests-list");
+    showSection('collection');
+    collectionRequestsList.innerHTML = "";
+    collectionRequestsTitle.innerText = `Requests in "${collection.name}"`;
 
     collection.requests.forEach((req, reqIndex) => {
       const reqItem = document.createElement("li");
@@ -249,12 +252,8 @@ document.addEventListener("DOMContentLoaded", () => {
         methodSelect.value = req.method;
         headersInput.value = req.headersText;
         bodyInput.value = req.bodyText;
-        apiControls.style.display = 'block';
-        collectionRequestsDisplay.remove();
-        document.querySelector('.sidebar-tab.active').classList.remove('active');
-        document.querySelector('[data-tab="history"]').classList.add('active');
-        document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
-        document.getElementById('sidebar-history').style.display = 'block';
+        showSection('main');
+        resetSaveButton();
       });
 
       // Delete button listener
@@ -273,12 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headersInput.value = req.headersText;
         bodyInput.value = req.bodyText;
         toggleSaveUpdateButton(collectionIndex, reqIndex);
-        apiControls.style.display = 'block';
-        collectionRequestsDisplay.remove();
-        document.querySelector('.sidebar-tab.active').classList.remove('active');
-        document.querySelector('[data-tab="history"]').classList.add('active');
-        document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
-        document.getElementById('sidebar-history').style.display = 'block';
+        showSection('main');
       });
 
       // Test button listener
@@ -292,38 +286,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayTestScreen(request) {
-    apiControls.style.display = 'none';
-
-    const testScreen = document.createElement('div');
-    testScreen.id = "test-screen";
-    testScreen.innerHTML = `
-      <h3>Test Request</h3>
-      <div class="api-controls" style="display: flex; flex-direction: column; gap: 10px;">
-        <div class="method-url-container" style="display: flex; gap: 5px;">
-          <select id="test-method" disabled style="width: 100px;">
-            <option>${request.method}</option>
-          </select>
-          <input type="text" id="test-url" value="${request.url}" disabled style="flex-grow: 1;">
-        </div>
-        <div class="headers-body-container" style="display: flex; flex-direction: column; gap: 5px;">
-          <textarea id="test-headers" placeholder="Headers (JSON)" disabled>${request.headersText}</textarea>
-          <textarea id="test-body" placeholder="Body (JSON)" disabled>${request.bodyText}</textarea>
-        </div>
-        <button id="test-send-btn" style="width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #28a745; background-color: #28a745; color: white; cursor: pointer;">Test</button>
-      </div>
-      <div id="test-response-wrapper" style="margin-top: 20px;">
-        <h4>Response</h4>
-        <pre id="test-response" style="background-color: #2c2f33; color: white; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;"></pre>
-      </div>
-    `;
-
-    const main = document.querySelector(".main");
-    const existingDisplay = document.getElementById("collection-requests-display") || document.getElementById("test-screen");
-    if (existingDisplay) existingDisplay.remove();
-    main.insertBefore(testScreen, main.firstChild);
-
-    const testSendBtn = document.getElementById("test-send-btn");
-    const testResponse = document.getElementById("test-response");
+    showSection('test');
+    testMethod.innerHTML = `<option>${request.method}</option>`;
+    testUrl.value = request.url;
+    testHeaders.value = request.headersText;
+    testBody.value = request.bodyText;
+    testResponse.innerText = "";
 
     testSendBtn.addEventListener('click', async () => {
       testResponse.innerText = "Loading...";
@@ -436,7 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     collections[collectionIndex].requests.push(request);
     localStorage.setItem("collections", JSON.stringify(collections));
-    // Re-render the collections list to show the updated count immediately.
     renderCollections();
   }
 

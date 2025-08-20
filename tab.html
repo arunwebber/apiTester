@@ -54,73 +54,99 @@
     </div>
     
     <div class="main">
-      <div class="api-controls">
-        <div class="control-row">
-          <label for="url">URL:</label>
-          <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
+      <div id="main-api-section">
+        <div class="api-controls">
+          <div class="control-row">
+            <label for="url">URL:</label>
+            <input type="text" id="url" placeholder="https://jsonplaceholder.typicode.com/posts" />
+          </div>
+          <div class="control-row">
+            <label for="method">Method:</label>
+            <select id="method">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+              <option>PATCH</option>
+              <option>HEAD</option>
+              <option>OPTIONS</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <label for="headers">Headers (JSON):</label>
+            <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
+          </div>
+          <div class="control-row">
+            <label for="body">Body (JSON):</label>
+            <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
+          </div>
+          <div class="button-wrapper" style="position: relative;">
+            <button id="send">Send</button>
+            <button id="save-request-btn">Save</button>
+            <div id="save-dropdown" style="display: none;">
+              <ul id="save-collection-list"></ul>
+              <div class="button-group">
+                <input type="text" id="new-collection-name" placeholder="New Collection Name" />
+                <button id="save-to-new-btn">Save to New</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="control-row">
-          <label for="method">Method:</label>
-          <select id="method">
-            <option>GET</option>
-            <option>POST</option>
-            <option>PUT</option>
-            <option>DELETE</option>
-            <option>PATCH</option>
-            <option>HEAD</option>
-            <option>OPTIONS</option>
-          </select>
-        </div>
-        <div class="control-row">
-          <label for="headers">Headers (JSON):</label>
-          <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
-        </div>
-        <div class="control-row">
-          <label for="body">Body (JSON):</label>
-          <textarea id="body" placeholder='{"title": "foo", "body": "bar"}'></textarea>
-        </div>
-        <div class="button-wrapper" style="position: relative;">
-          <button id="send">Send</button>
-          <button id="save-request-btn">Save</button>
-          <div id="save-dropdown" style="display: none;">
-            <ul id="save-collection-list"></ul>
-            <div class="button-group">
-              <input type="text" id="new-collection-name" placeholder="New Collection Name" />
-              <button id="save-to-new-btn">Save to New</button>
+
+        <h3>Response</h3>
+        <div class="response-tabs-wrapper">
+          <div class="response-tabs">
+            <button class="resp-tab active" data-tab="body">Body</button>
+            <button class="resp-tab" data-tab="cookies">Cookies</button>
+            <button class="resp-tab" data-tab="headers">Headers</button>
+          </div>
+          <div class="response-content-wrapper">
+            <div class="response-content" id="tab-body">
+              <div class="body-subtabs">
+                <button class="body-subtab active" data-subtab="pretty">Pretty</button>
+                <button class="body-subtab" data-subtab="raw">Raw</button>
+                <select id="pretty-mode">
+                  <option value="auto">Auto</option>
+                  <option value="json">JSON</option>
+                  <option value="xml">XML</option>
+                  <option value="html">HTML</option>
+                  <option value="text">Text</option>
+                </select>
+              </div>
+              <pre id="pretty-response"></pre>
+              <pre id="raw-response" style="display: none;"></pre>
+            </div>
+            <div class="response-content" id="tab-cookies" style="display: none;">
+              <pre id="cookie-response">Cookies will appear here.</pre>
+            </div>
+            <div class="response-content" id="tab-headers" style="display: none;">
+              <pre id="header-response">Headers will appear here.</pre>
             </div>
           </div>
         </div>
       </div>
 
-      <h3>Response</h3>
-      <div class="response-tabs-wrapper">
-        <div class="response-tabs">
-          <button class="resp-tab active" data-tab="body">Body</button>
-          <button class="resp-tab" data-tab="cookies">Cookies</button>
-          <button class="resp-tab" data-tab="headers">Headers</button>
+      <div id="collection-requests-display" style="display: none;">
+        <h3 id="collection-requests-title">Requests in Collection</h3>
+        <ul id="collection-requests-list"></ul>
+      </div>
+
+      <div id="test-screen" style="display: none;">
+        <h3>Test Request</h3>
+        <div class="api-controls">
+          <div class="method-url-container" style="display: flex; gap: 5px;">
+            <select id="test-method" disabled style="width: 100px;"></select>
+            <input type="text" id="test-url" disabled style="flex-grow: 1;">
+          </div>
+          <div class="headers-body-container" style="display: flex; flex-direction: column; gap: 5px;">
+            <textarea id="test-headers" placeholder="Headers (JSON)" disabled></textarea>
+            <textarea id="test-body" placeholder="Body (JSON)" disabled></textarea>
+          </div>
+          <button id="test-send-btn" style="width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #28a745; background-color: #28a745; color: white; cursor: pointer;">Test</button>
         </div>
-        <div class="response-content-wrapper">
-          <div class="response-content" id="tab-body">
-            <div class="body-subtabs">
-              <button class="body-subtab active" data-subtab="pretty">Pretty</button>
-              <button class="body-subtab" data-subtab="raw">Raw</button>
-              <select id="pretty-mode">
-                <option value="auto">Auto</option>
-                <option value="json">JSON</option>
-                <option value="xml">XML</option>
-                <option value="html">HTML</option>
-                <option value="text">Text</option>
-              </select>
-            </div>
-            <pre id="pretty-response"></pre>
-            <pre id="raw-response" style="display: none;"></pre>
-          </div>
-          <div class="response-content" id="tab-cookies" style="display: none;">
-            <pre id="cookie-response">Cookies will appear here.</pre>
-          </div>
-          <div class="response-content" id="tab-headers" style="display: none;">
-            <pre id="header-response">Headers will appear here.</pre>
-          </div>
+        <div id="test-response-wrapper" style="margin-top: 20px;">
+          <h4>Response</h4>
+          <pre id="test-response" style="background-color: #2c2f33; color: white; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;"></pre>
         </div>
       </div>
     </div>
