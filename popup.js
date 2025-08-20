@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const headersInput = document.getElementById("headers");
   const bodyInput = document.getElementById("body");
   const apiControls = document.querySelector(".api-controls");
-  const responseSection = document.getElementById("response-section");
+  const responseSection = document.getElementById("response-tabs-wrapper");
 
   const prettyResponse = document.getElementById("pretty-response");
   const rawResponse = document.getElementById("raw-response");
@@ -90,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById(`sidebar-${tabId}`).style.display = "block";
 
       if (tabId === "history") {
-        // Show the main API controls when history is active
         apiControls.style.display = 'block';
       }
     });
@@ -175,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     collections.forEach((col, idx) => {
       const div = document.createElement("div");
       div.className = "history-item";
-      div.style.cursor = "pointer"; // Make the whole item clickable
+      div.style.cursor = "pointer";
       div.innerHTML = `
         <span><strong>${col.name}</strong> (${col.requests.length} requests)</span>
         <button class="delete-btn" data-index="${idx}">Delete</button>
@@ -197,10 +196,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayCollectionRequests(collection) {
-    // Hide the main API controls
     apiControls.style.display = 'none';
 
-    // Clear and create a new display area for requests
     const collectionRequestsDisplay = document.createElement('div');
     collectionRequestsDisplay.id = "collection-requests-display";
     collectionRequestsDisplay.innerHTML = `
@@ -208,18 +205,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <ul id="collection-requests-list"></ul>
     `;
     
-    // Add a back button
     const backBtn = document.createElement('button');
     backBtn.innerText = "Back to Main";
     backBtn.style.marginBottom = "10px";
     backBtn.addEventListener('click', () => {
-        // Re-show main controls and remove the requests list
         apiControls.style.display = 'block';
         collectionRequestsDisplay.remove();
     });
     collectionRequestsDisplay.insertBefore(backBtn, collectionRequestsDisplay.firstChild);
 
-    // Get the main area and replace its content
     const main = document.querySelector(".main");
     const existingDisplay = document.getElementById("collection-requests-display");
     if (existingDisplay) existingDisplay.remove();
@@ -240,10 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
         methodSelect.value = req.method;
         headersInput.value = req.headersText;
         bodyInput.value = req.bodyText;
-        // Switch back to main controls
         apiControls.style.display = 'block';
         collectionRequestsDisplay.remove();
-        // Also switch sidebar tab back to history
         document.querySelector('.sidebar-tab.active').classList.remove('active');
         document.querySelector('[data-tab="history"]').classList.add('active');
         document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
@@ -265,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCollections();
 
-  // New Save Request Logic
   function renderSaveCollections() {
     saveCollectionList.innerHTML = "";
     collections.forEach((col, idx) => {
@@ -315,6 +306,64 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(`Request saved to "${collections[collectionIndex].name}".`);
   }
 
+  // Function to format HTML with indentation
+  function formatHtml(html) {
+    let formatted = '';
+    const lines = html.replace(/</g, '\n<').replace(/>/g, '>\n').split('\n');
+    let indent = 0;
+    const indentChar = '  ';
+
+    for (const line of lines) {
+      if (line.trim() === '') continue;
+
+      if (line.startsWith('</')) {
+        indent--;
+        formatted += indentChar.repeat(indent) + line.trim() + '\n';
+      } else if (line.startsWith('<') && !line.endsWith('/>')) {
+        formatted += indentChar.repeat(indent) + line.trim() + '\n';
+        indent++;
+      } else {
+        formatted += indentChar.repeat(indent) + line.trim() + '\n';
+      }
+    }
+    return formatted.trim();
+  }
+
+  // New function to format the response based on the selected mode
+  function formatResponse(raw, mode, contentType) {
+    let formatted = raw;
+
+    if ((mode === "json") || (mode === "auto" && contentType.includes("application/json"))) {
+      try {
+        formatted = JSON.stringify(JSON.parse(raw), null, 2);
+      } catch (err) {
+        formatted = `Could not parse response as JSON: ${err.message}\n\nRaw response:\n${raw}`;
+        console.error("JSON Parsing Error:", err);
+      }
+    } else if ((mode === "xml") || (mode === "auto" && contentType.includes("xml"))) {
+      try {
+        const doc = new DOMParser().parseFromString(raw, "application/xml");
+        formatted = new XMLSerializer().serializeToString(doc);
+      } catch (err) {
+        formatted = `Could not parse response as XML: ${err.message}\n\nRaw response:\n${raw}`;
+        console.error("XML Parsing Error:", err);
+      }
+    } else if ((mode === "html") || (mode === "auto" && contentType.includes("text/html"))) {
+      formatted = formatHtml(raw);
+    } else {
+      formatted = raw;
+    }
+    return formatted;
+  }
+
+  // EVENT LISTENER FOR PRETTY MODE DROPDOWN
+  prettyMode.addEventListener('change', () => {
+    const currentRawContent = rawResponse.innerText;
+    const currentContentType = prettyResponse.dataset.contentType || '';
+    const newFormattedContent = formatResponse(currentRawContent, prettyMode.value, currentContentType);
+    prettyResponse.innerText = newFormattedContent;
+  });
+
   // SEND REQUEST
   sendBtn.addEventListener("click", async () => {
     console.log("Send button clicked. Starting API request...");
@@ -324,11 +373,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let headersText = replaceEnvVariables(headersInput.value);
     let bodyText = replaceEnvVariables(bodyInput.value);
 
-    // Clear previous responses and show a loading message
     prettyResponse.innerText = "Loading...";
     rawResponse.innerText = "";
     headerResponse.innerText = "";
     cookieResponse.innerText = "";
+    
+    // Reset prettyMode dropdown to auto
+    prettyMode.value = 'auto';
 
     let headers = {};
     if (headersText.trim() !== "") {
@@ -375,33 +426,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const raw = await res.text();
       const contentType = res.headers.get("content-type") || "";
+      
+      // Store raw content and content type for later use
       rawResponse.innerText = raw;
+      prettyResponse.dataset.contentType = contentType;
 
-      console.log("Content-Type:", contentType);
-      console.log("Raw Response:", raw);
-
-      let formatted = raw;
-      const mode = prettyMode.value;
-
-      if ((mode === "json") || (mode === "auto" && contentType.includes("application/json"))) {
-        try {
-          formatted = JSON.stringify(JSON.parse(raw), null, 2);
-        } catch (err) {
-          formatted = `Could not parse response as JSON: ${err.message}\n\nRaw response:\n${raw}`;
-          console.error("JSON Parsing Error:", err);
-        }
-      } else if ((mode === "xml") || (mode === "auto" && contentType.includes("xml"))) {
-        try {
-          const doc = new DOMParser().parseFromString(raw, "application/xml");
-          formatted = new XMLSerializer().serializeToString(doc);
-        } catch (err) {
-          formatted = `Could not parse response as XML: ${err.message}\n\nRaw response:\n${raw}`;
-          console.error("XML Parsing Error:", err);
-        }
-      } else {
-        formatted = raw;
-      }
-
+      // Format based on the new logic
+      const formatted = formatResponse(raw, prettyMode.value, contentType);
       prettyResponse.innerText = formatted;
 
       let headerStr = "";
